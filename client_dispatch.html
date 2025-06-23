@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Dispatch - Finocos System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .number-input {
+            display: flex;
+            align-items: center;
+        }
+        .number-input input {
+            text-align: center;
+            margin: 0 5px;
+            -moz-appearance: textfield;
+            appearance: textfield;
+            flex-grow: 1;
+        }
+        .number-input button {
+            width: 40px;
+            height: 40px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        .number-input button:hover {
+            background-color: #45a049;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            transition: background-color 0.3s;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Client Dispatch</h1>
+        <form id="dispatchForm">
+            <div class="form-group">
+                <label for="serialNumber">Serial Number</label>
+                <input type="text" id="serialNumber" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="masterSerial">Master Serial</label>
+                <input type="text" id="masterSerial" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="counterParty">Counter Party</label>
+                <input type="text" id="counterParty" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="materialName">Material Name</label>
+                <input type="text" id="materialName" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="materialCode">Material Code</label>
+                <input type="text" id="materialCode" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="size">Size</label>
+                <div class="number-input">
+                    <button type="button" class="decrement" onclick="stepDown('size')">-</button>
+                    <input type="number" id="size" min="0" step="0.1" value="0.00" required>
+                    <button type="button" class="increment" onclick="stepUp('size')">+</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="weight">Weight</label>
+                <input type="number" id="weight" min="0" step="0.01" required>
+            </div>
+            
+            <button type="submit" class="submit-btn">Submit Dispatch</button>
+        </form>
+        <a href="index.html" class="back-btn" id="backToHome" style="display: inline-block; margin-top: 1rem; color: #4CAF50; text-decoration: none; font-weight: bold; cursor: pointer;">← Back to Home</a>
+    </div>
+
+    <script>
+        // Load data from new entry form
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clear form data when back button is clicked
+            document.getElementById('backToHome').addEventListener('click', function() {
+                document.getElementById('dispatchForm').reset();
+            });
+            
+            const lastEntry = JSON.parse(localStorage.getItem('lastEntry') || '{}');
+            
+            if (lastEntry) {
+                document.getElementById('serialNumber').value = lastEntry.serialNumber || '';
+                document.getElementById('materialName').value = lastEntry.materialName || '';
+                document.getElementById('materialCode').value = lastEntry.materialCode || '';
+                document.getElementById('size').value = lastEntry.size ? parseFloat(lastEntry.size).toFixed(2) : '0.00';
+                document.getElementById('weight').value = lastEntry.weight || '';
+            }
+        });
+
+        // Form submission
+        document.getElementById('dispatchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const formData = {
+                serialNumber: document.getElementById('serialNumber').value,
+                masterSerial: document.getElementById('masterSerial').value,
+                counterParty: document.getElementById('counterParty').value,
+                materialName: document.getElementById('materialName').value,
+                materialCode: document.getElementById('materialCode').value,
+                size: parseFloat(document.getElementById('size').value),
+                weight: parseFloat(document.getElementById('weight').value)
+            };
+            
+            // Store dispatch data
+            const dispatchData = {
+                ...formData,
+                type: 'dispatch',
+                timestamp: new Date().toISOString()
+            };
+            
+            // Get existing transactions or initialize empty array
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            transactions.push(dispatchData);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            
+            console.log('Dispatch submitted:', dispatchData);
+            alert('Dispatch submitted successfully!');
+            clearAndGoHome();
+        });
+        
+        function stepUp(inputId) {
+            const input = document.getElementById(inputId);
+            let value = parseFloat(input.value) || 0;
+            value = Math.round((value + 1) * 10) / 10; // Increment by 1
+            input.value = value.toFixed(2);
+        }
+        
+        function stepDown(inputId) {
+            const input = document.getElementById(inputId);
+            let value = parseFloat(input.value) || 0;
+            if (value > 0) {
+                value = Math.max(0, Math.round((value - 1) * 10) / 10); // Decrement by 1
+                input.value = value.toFixed(2);
+            }
+        }
+    </script>
+</body>
+</html>

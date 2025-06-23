@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary - Finocos System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .number-input {
+            display: flex;
+            align-items: center;
+        }
+        .number-input input {
+            text-align: center;
+            margin: 0 5px;
+            -moz-appearance: textfield;
+            appearance: textfield;
+            flex-grow: 1;
+        }
+        .number-input button {
+            width: 40px;
+            height: 40px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        .number-input button:hover {
+            background-color: #45a049;
+        }
+        .number-input button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: #333;
+            margin: 1.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Summary</h1>
+        
+        <form id="summaryForm">
+            <div class="form-group">
+                <label for="serialNumber">Serial Number</label>
+                <input type="text" id="serialNumber" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="materialName">Material Name</label>
+                <input type="text" id="materialName" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="materialCode">Material Code</label>
+                <input type="text" id="materialCode" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="size">Size</label>
+                <div class="number-input">
+                    <button type="button" class="decrement" onclick="stepDown('size')" disabled>-</button>
+                    <input type="number" id="size" min="0" step="0.1" value="0.00" readonly>
+                    <button type="button" class="increment" onclick="stepUp('size')" disabled>+</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="weight">Weight</label>
+                <input type="number" id="weight" min="0" step="0.01" readonly>
+            </div>
+            
+            <h3 class="section-title">Time Stamp</h3>
+            <div class="form-group">
+                <label for="timeStamp">Date & Time</label>
+                <input type="datetime-local" id="timeStamp" readonly>
+            </div>
+            <div class="form-group">
+                <label for="timeStampQty">Qty</label>
+                <input type="number" id="timeStampQty" min="0" step="1" value="0" readonly>
+            </div>
+            <div class="form-group">
+                <label for="timeStampSize">Size</label>
+                <div class="number-input">
+                    <button type="button" class="decrement" onclick="stepDown('timeStampSize')" disabled>-</button>
+                    <input type="number" id="timeStampSize" min="0" step="0.1" value="0.00" readonly>
+                    <button type="button" class="increment" onclick="stepUp('timeStampSize')" disabled>+</button>
+                </div>
+            </div>
+            
+            <h3 class="section-title">Return Time Stamp</h3>
+            <div class="form-group">
+                <label for="returnTimeStamp">Date & Time</label>
+                <input type="datetime-local" id="returnTimeStamp" readonly>
+            </div>
+            <div class="form-group">
+                <label for="returnTimeStampQty">Qty</label>
+                <input type="number" id="returnTimeStampQty" min="0" step="1" value="0" readonly>
+            </div>
+            <div class="form-group">
+                <label for="returnTimeStampSize">Size</label>
+                <div class="number-input">
+                    <button type="button" class="decrement" onclick="stepDown('returnTimeStampSize')" disabled>-</button>
+                    <input type="number" id="returnTimeStampSize" min="0" step="0.1" value="0.00" readonly>
+                    <button type="button" class="increment" onclick="stepUp('returnTimeStampSize')" disabled>+</button>
+                </div>
+            </div>
+            
+            <h3 class="section-title">Balance</h3>
+            <div class="form-group">
+                <label for="balanceQty">Qty</label>
+                <input type="number" id="balanceQty" min="0" step="1" value="0" readonly>
+            </div>
+            <div class="form-group">
+                <label for="balanceSize">Size</label>
+                <div class="number-input">
+                    <button type="button" class="decrement" disabled>-</button>
+                    <input type="number" id="balanceSize" min="0" step="0.1" value="0.00" readonly>
+                    <button type="button" class="increment" disabled>+</button>
+                </div>
+            </div>
+            
+            <div id="noData" class="no-data" style="display: none; text-align: center; margin: 1rem 0; color: #666; font-style: italic;">
+                No transaction data available.
+            </div>
+            
+            <button type="button" class="back-btn" id="backToHome">← Back to Home</button>
+        </form>
+    </div>
+
+    <script>
+        // Number input controls
+        function stepUp(inputId) {
+            const input = document.getElementById(inputId);
+            let value = parseFloat(input.value) || 0;
+            value = Math.round((value + 1) * 10) / 10;
+            input.value = value.toFixed(2);
+        }
+        
+        function stepDown(inputId) {
+            const input = document.getElementById(inputId);
+            let value = parseFloat(input.value) || 0;
+            if (value > 0) {
+                value = Math.max(0, Math.round((value - 1) * 10) / 10);
+                input.value = value.toFixed(2);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load the last entry data
+            const lastEntry = JSON.parse(localStorage.getItem('lastEntry') || '{}');
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            
+            // Set basic info from last entry
+            if (lastEntry) {
+                document.getElementById('serialNumber').value = lastEntry.serialNumber || '';
+                document.getElementById('materialName').value = lastEntry.materialName || '';
+                document.getElementById('materialCode').value = lastEntry.materialCode || '';
+                document.getElementById('size').value = lastEntry.size ? parseFloat(lastEntry.size).toFixed(2) : '0.00';
+                document.getElementById('weight').value = lastEntry.weight ? parseFloat(lastEntry.weight).toFixed(2) : '0.00';
+            }
+            
+            // Calculate dispatch and return totals
+            let dispatchQty = 0;
+            let dispatchSize = 0;
+            let returnQty = 0;
+            let returnSize = 0;
+            let lastDispatchTime = null;
+            let lastReturnTime = null;
+            
+            transactions.forEach(tx => {
+                if (tx.serialNumber === lastEntry.serialNumber) {
+                    if (tx.type === 'dispatch') {
+                        dispatchQty++;
+                        dispatchSize += parseFloat(tx.size) || 0;
+                        lastDispatchTime = tx.timestamp;
+                    } else if (tx.type === 'return') {
+                        returnQty++;
+                        returnSize += parseFloat(tx.size) || 0;
+                        lastReturnTime = tx.timestamp;
+                    }
+                }
+            });
+            
+            // Calculate balances
+            const balanceQty = dispatchQty - returnQty;
+            const balanceSize = dispatchSize - returnSize;
+            
+            // Update the UI
+            document.getElementById('timeStampQty').value = dispatchQty;
+            document.getElementById('timeStampSize').value = dispatchSize.toFixed(2);
+            document.getElementById('returnTimeStampQty').value = returnQty;
+            document.getElementById('returnTimeStampSize').value = returnSize.toFixed(2);
+            document.getElementById('balanceQty').value = balanceQty;
+            document.getElementById('balanceSize').value = balanceSize.toFixed(2);
+            
+            // Set timestamps
+            if (lastDispatchTime) {
+                const dispatchDate = new Date(lastDispatchTime);
+                document.getElementById('timeStamp').value = dispatchDate.toISOString().slice(0, 16);
+            }
+            
+            if (lastReturnTime) {
+                const returnDate = new Date(lastReturnTime);
+                document.getElementById('returnTimeStamp').value = returnDate.toISOString().slice(0, 16);
+            }
+            
+            // Show/hide no data message
+            document.getElementById('noData').style.display = transactions.length > 0 ? 'none' : 'block';
+        });
+        
+        function formatDateTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+        
+        // Add event listener for the back button
+        document.getElementById('backToHome').addEventListener('click', function() {
+            // Clear form data
+            document.getElementById('summaryForm').reset();
+            // Navigate to home
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
