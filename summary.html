@@ -43,12 +43,21 @@
         }
         input[type="text"],
         input[type="number"],
-        input[type="datetime-local"] {
+        input[type="datetime-local"],
+        select.form-control {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 1rem;
+            background-color: #fff;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat, repeat;
+            background-position: right 0.7em top 50%, 0 0;
+            background-size: 0.65em auto, 100%;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
         input[type="number"] {
             -moz-appearance: textfield;
@@ -131,28 +140,61 @@
             </div>
             
             <div class="form-group">
+                <label for="masterSerial">Master Serial</label>
+                <input type="text" id="masterSerial" readonly>
+            </div>
+            
+            <div class="form-group">
                 <label for="materialName">Material Name</label>
-                <input type="text" id="materialName" readonly>
+                <select id="materialName" class="form-control">
+                    <option value="" disabled selected>Select a material</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Platinum">Platinum</option>
+                    <option value="Diamond">Diamond</option>
+                    <option value="Pearl">Pearl</option>
+                    <option value="Ruby">Ruby</option>
+                </select>
             </div>
             
             <div class="form-group">
                 <label for="materialCode">Material Code</label>
-                <input type="text" id="materialCode" readonly>
+                <input type="text" id="materialCode" class="form-control" readonly>
             </div>
             
             <div class="form-group">
-                <label for="size">Size</label>
-                <div class="number-input">
-                    <button type="button" class="decrement" onclick="stepDown('size')" disabled>-</button>
-                    <input type="number" id="size" min="0" step="0.1" value="0.00" readonly>
-                    <button type="button" class="increment" onclick="stepUp('size')" disabled>+</button>
+                <label>Size</label>
+                <div id="sizeInputs">
+                    <div class="size-input-row" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <div class="number-input" style="flex: 1;">
+                            <button type="button" class="decrement" onclick="stepDown(this.nextElementSibling)">-</button>
+                            <input type="number" id="size" name="sizes[]" min="0" step="0.1" value="0.00" required onchange="formatDecimal(this)" onblur="formatDecimal(this)">
+                            <button type="button" class="increment" onclick="stepUp(this.previousElementSibling)">+</button>
+                        </div>
+                        <button type="button" class="delete-size" style="padding: 0.75rem 1.25rem; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;" disabled>Delete</button>
+                    </div>
                 </div>
+                <button type="button" id="addSizeBtn" style="margin-top: 10px; padding: 0.75rem 1.25rem; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">Add Another Size</button>
             </div>
             
             <div class="form-group">
                 <label for="weight">Weight</label>
-                <input type="number" id="weight" min="0" step="0.01" readonly>
+                <input type="number" id="weight" class="form-control hide-spinners" min="0" step="0.01" placeholder="0.00">
             </div>
+            <style>
+                /* Hide number input spinners */
+                .hide-spinners::-webkit-outer-spin-button,
+                .hide-spinners::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
+                    margin: 0;
+                }
+                .hide-spinners {
+                    -moz-appearance: textfield;
+                    appearance: textfield;
+                }
+            </style>
             
             <h3 class="section-title">Time Stamp</h3>
             <div class="form-group">
@@ -230,6 +272,23 @@
             }
         }
 
+        // Material code mapping
+        const materialCodes = {
+            'Gold': 'GLD',
+            'Silver': 'SLV',
+            'Platinum': 'PLT',
+            'Diamond': 'DIA',
+            'Pearl': 'PRL',
+            'Ruby': 'RBY'
+        };
+
+        // Auto-fill material code when material is selected
+        document.getElementById('materialName').addEventListener('change', function() {
+            const materialName = this.value;
+            const materialCode = materialCodes[materialName] || '';
+            document.getElementById('materialCode').value = materialCode;
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             // Load the last entry data
             const lastEntry = JSON.parse(localStorage.getItem('lastEntry') || '{}');
@@ -237,11 +296,22 @@
             
             // Set basic info from last entry
             if (lastEntry) {
-                document.getElementById('serialNumber').value = lastEntry.serialNumber || '';
-                document.getElementById('materialName').value = lastEntry.materialName || '';
-                document.getElementById('materialCode').value = lastEntry.materialCode || '';
-                document.getElementById('size').value = lastEntry.size ? parseFloat(lastEntry.size).toFixed(2) : '0.00';
-                document.getElementById('weight').value = lastEntry.weight ? parseFloat(lastEntry.weight).toFixed(2) : '0.00';
+                document.getElementById('serialNumber').value = '123';
+                document.getElementById('masterSerial').value = '123456';
+                
+                // Set material name and trigger change to update material code
+                if (lastEntry.materialName) {
+                    const materialSelect = document.getElementById('materialName');
+                    materialSelect.value = lastEntry.materialName;
+                    // Update material code based on selected material
+                    document.getElementById('materialCode').value = materialCodes[lastEntry.materialName] || '';
+                }
+                // Set size from last entry or default to 0.00
+                const sizeInput = document.getElementById('size');
+                sizeInput.value = lastEntry.size ? parseFloat(lastEntry.size).toFixed(2) : '0.00';
+                // Ensure the value is properly formatted
+                if (sizeInput.value === '0') sizeInput.value = '0.00';
+                // Weight field remains empty by default
             }
             
             // Calculate dispatch and return totals
@@ -305,6 +375,72 @@
             document.getElementById('summaryForm').reset();
             // Navigate to home
             window.location.href = 'index.html';
+        });
+        
+        function stepUp(inputElement) {
+            let value = parseFloat(inputElement.value) || 0;
+            value = Math.round((value + 1) * 10) / 10; // Increment by 1
+            inputElement.value = value.toFixed(2);
+        }
+        
+        function stepDown(inputElement) {
+            let value = parseFloat(inputElement.value) || 0;
+            value = Math.max(0, Math.round((value - 1) * 10) / 10); // Decrement by 1
+            inputElement.value = value.toFixed(2);
+        }
+        
+        function formatDecimal(input) {
+            // Ensure the input has exactly 2 decimal places
+            if (input.value && input.value !== '') {
+                let value = parseFloat(input.value);
+                if (!isNaN(value)) {
+                    input.value = value.toFixed(2);
+                } else {
+                    input.value = '0.00';
+                }
+            } else {
+                input.value = '0.00';
+            }
+        }
+        
+        // Add size input row
+        document.getElementById('addSizeBtn').addEventListener('click', function() {
+            const container = document.getElementById('sizeInputs');
+            const newRow = document.createElement('div');
+            newRow.className = 'size-input-row';
+            newRow.style.display = 'flex';
+            newRow.style.gap = '10px';
+            newRow.style.marginBottom = '10px';
+            newRow.style.alignItems = 'center';
+            
+            newRow.innerHTML = `
+                <div class="number-input" style="flex: 1;">
+                    <button type="button" class="decrement" onclick="stepDown(this.nextElementSibling)">-</button>
+                    <input type="number" name="sizes[]" min="0" step="0.1" value="0.00" required>
+                    <button type="button" class="increment" onclick="stepUp(this.previousElementSibling)">+</button>
+                </div>
+                <button type="button" class="delete-size" style="padding: 0.75rem 1.25rem; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">Delete</button>
+            `;
+            
+            // Enable delete buttons when adding a new row
+            const deleteButtons = container.querySelectorAll('.delete-size');
+            if (deleteButtons.length > 0) {
+                deleteButtons[0].disabled = false;
+            }
+            
+            // Add delete functionality
+            const deleteBtn = newRow.querySelector('.delete-size');
+            deleteBtn.addEventListener('click', function() {
+                container.removeChild(newRow);
+                
+                // If only one row left, disable its delete button
+                const rows = container.querySelectorAll('.size-input-row');
+                if (rows.length === 1) {
+                    rows[0].querySelector('.delete-size').disabled = true;
+                }
+            });
+            
+            container.appendChild(newRow);
         });
     </script>
 </body>
