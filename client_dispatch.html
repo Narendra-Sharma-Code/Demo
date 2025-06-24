@@ -58,6 +58,20 @@
             -webkit-appearance: none;
             margin: 0;
         }
+        select.form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: white;
+            cursor: pointer;
+        }
+        select.form-control:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
         .number-input {
             display: flex;
             align-items: center;
@@ -121,22 +135,44 @@
         <form id="dispatchForm">
             <div class="form-group">
                 <label for="serialNumber">Serial Number</label>
-                <input type="text" id="serialNumber" readonly>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="serialNumber" value="123456" readonly style="flex: 1;">
+                    <button type="button" class="scan-btn" style="background-color: #2196F3; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer; font-weight: bold; white-space: nowrap;">Scan</button>
+                </div>
             </div>
             
             <div class="form-group">
                 <label for="masterSerial">Master Serial</label>
-                <input type="text" id="masterSerial" required>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="masterSerial" value="123" required style="flex: 1;">
+                    <button type="button" class="scan-btn" style="background-color: #2196F3; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer; font-weight: bold; white-space: nowrap;">Scan</button>
+                </div>
             </div>
             
             <div class="form-group">
                 <label for="counterParty">Counter Party</label>
-                <input type="text" id="counterParty" required>
+                <select id="counterParty" class="form-control" required>
+                    <option value="" disabled selected>Select a counterparty</option>
+                    <option value="M/S Jewel">M/S Jewel</option>
+                    <option value="Shree Gems">Shree Gems</option>
+                    <option value="Diamond World">Diamond World</option>
+                    <option value="Gold Palace">Gold Palace</option>
+                    <option value="Silver Spark">Silver Spark</option>
+                    <option value="Platinum House">Platinum House</option>
+                </select>
             </div>
             
             <div class="form-group">
                 <label for="materialName">Material Name</label>
-                <input type="text" id="materialName" readonly>
+                <select id="materialName" class="form-control" required>
+                    <option value="" disabled selected>Select a material</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Platinum">Platinum</option>
+                    <option value="Diamond">Diamond</option>
+                    <option value="Pearl">Pearl</option>
+                    <option value="Ruby">Ruby</option>
+                </select>
             </div>
             
             <div class="form-group">
@@ -145,12 +181,18 @@
             </div>
             
             <div class="form-group">
-                <label for="size">Size</label>
-                <div class="number-input">
-                    <button type="button" class="decrement" onclick="stepDown('size')">-</button>
-                    <input type="number" id="size" min="0" step="0.1" value="0.00" required>
-                    <button type="button" class="increment" onclick="stepUp('size')">+</button>
+                <label>Size</label>
+                <div id="sizeInputs">
+                    <div class="size-input-row" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <div class="number-input" style="flex: 1;">
+                            <button type="button" class="decrement" onclick="stepDown(this.nextElementSibling)">-</button>
+                            <input type="number" name="sizes[]" min="0" step="0.1" value="0.00" required>
+                            <button type="button" class="increment" onclick="stepUp(this.previousElementSibling)">+</button>
+                        </div>
+                        <button type="button" class="delete-size" style="padding: 0.75rem 1.25rem; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;" disabled>Delete</button>
+                    </div>
                 </div>
+                <button type="button" id="addSizeBtn" style="margin-top: 10px; padding: 0.75rem 1.25rem; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">Add Another Size</button>
             </div>
             
             <div class="form-group">
@@ -164,19 +206,115 @@
     </div>
 
     <script>
+        // Function to create a new size input row
+        function createSizeInputRow() {
+            const container = document.getElementById('sizeInputs');
+            const newRow = document.createElement('div');
+            newRow.className = 'size-input-row';
+            newRow.style.display = 'flex';
+            newRow.style.gap = '10px';
+            newRow.style.marginBottom = '10px';
+            newRow.style.alignItems = 'center';
+            
+            newRow.innerHTML = `
+                <div class="number-input" style="flex: 1;">
+                    <button type="button" class="decrement" onclick="stepDown(this.nextElementSibling)">-</button>
+                    <input type="number" name="sizes[]" min="0" step="0.1" value="0.00" required>
+                    <button type="button" class="increment" onclick="stepUp(this.previousElementSibling)">+</button>
+                </div>
+                <button type="button" class="delete-size" style="padding: 0.75rem 1.25rem; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">Delete</button>
+            `;
+            
+            // Add delete functionality
+            const deleteBtn = newRow.querySelector('.delete-size');
+            deleteBtn.addEventListener('click', function() {
+                container.removeChild(newRow);
+                // If this was the last row, re-enable delete on the previous row
+                const rows = container.querySelectorAll('.size-input-row');
+                if (rows.length > 0) {
+                    const lastRow = rows[rows.length - 1];
+                    lastRow.querySelector('.delete-size').disabled = rows.length === 1;
+                }
+            });
+            
+            // Disable delete button if this is the first row
+            if (container.children.length === 0) {
+                deleteBtn.disabled = true;
+            } else {
+                // Enable delete on the previous row when adding a new one
+                const lastRow = container.lastElementChild;
+                lastRow.querySelector('.delete-size').disabled = false;
+            }
+            
+            container.appendChild(newRow);
+            
+            // Focus the new input
+            setTimeout(() => {
+                const input = newRow.querySelector('input[type="number"]');
+                input.focus();
+            }, 0);
+        }
+        
+        // Material code mapping
+        const materialCodes = {
+            'Gold': 'GLD',
+            'Silver': 'SLV',
+            'Platinum': 'PLT',
+            'Diamond': 'DIA',
+            'Pearl': 'PRL',
+            'Ruby': 'RBY'
+        };
+
         // Load data from new entry form
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the first size input row (already present in HTML)
+            
+            // Add click event for the Add Size button
+            document.getElementById('addSizeBtn').addEventListener('click', createSizeInputRow);
+            
+            // Add scan button functionality
+            document.querySelectorAll('.scan-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // In a real app, this would interface with a barcode scanner
+                    // For demo purposes, we'll simulate a scan with a prompt
+                    const inputField = this.previousElementSibling;
+                    const currentValue = inputField.value;
+                    const scannedValue = prompt('Enter scanned value:', currentValue);
+                    
+                    if (scannedValue !== null) {
+                        inputField.value = scannedValue;
+                        // Trigger change event in case there are any listeners
+                        inputField.dispatchEvent(new Event('input'));
+                        inputField.dispatchEvent(new Event('change'));
+                    }
+                });
+            });
+            
             // Clear form data when back button is clicked
             document.getElementById('backToHome').addEventListener('click', function() {
                 document.getElementById('dispatchForm').reset();
             });
             
+            // Auto-fill material code when material is selected
+            document.getElementById('materialName').addEventListener('change', function() {
+                const materialName = this.value;
+                const materialCode = materialCodes[materialName] || '';
+                document.getElementById('materialCode').value = materialCode;
+            });
+            
+            // Always keep the default serial number (123456)
+            document.getElementById('serialNumber').value = '123456';
+            
+            // Load other data from localStorage if available
             const lastEntry = JSON.parse(localStorage.getItem('lastEntry') || '{}');
             
             if (lastEntry) {
-                document.getElementById('serialNumber').value = lastEntry.serialNumber || '';
-                document.getElementById('materialName').value = lastEntry.materialName || '';
-                document.getElementById('materialCode').value = lastEntry.materialCode || '';
+                // Set material name and trigger change to update material code
+                if (lastEntry.materialName) {
+                    const materialSelect = document.getElementById('materialName');
+                    materialSelect.value = lastEntry.materialName;
+                    materialSelect.dispatchEvent(new Event('change'));
+                }
                 document.getElementById('size').value = lastEntry.size ? parseFloat(lastEntry.size).toFixed(2) : '0.00';
                 document.getElementById('weight').value = lastEntry.weight || '';
             }
@@ -214,19 +352,17 @@
             clearAndGoHome();
         });
         
-        function stepUp(inputId) {
-            const input = document.getElementById(inputId);
-            let value = parseFloat(input.value) || 0;
+        function stepUp(inputElement) {
+            let value = parseFloat(inputElement.value) || 0;
             value = Math.round((value + 1) * 10) / 10; // Increment by 1
-            input.value = value.toFixed(2);
+            inputElement.value = value.toFixed(2);
         }
         
-        function stepDown(inputId) {
-            const input = document.getElementById(inputId);
-            let value = parseFloat(input.value) || 0;
+        function stepDown(inputElement) {
+            let value = parseFloat(inputElement.value) || 0;
             if (value > 0) {
                 value = Math.max(0, Math.round((value - 1) * 10) / 10); // Decrement by 1
-                input.value = value.toFixed(2);
+                inputElement.value = value.toFixed(2);
             }
         }
     </script>
